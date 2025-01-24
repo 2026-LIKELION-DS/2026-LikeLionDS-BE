@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('board.urls')),
     path('health/', views.health_check, name='health_check'),
-    path('qna/', include('qna.urls'))
+    path('qna/', include('qna.urls')),
+    path('check/', include('check.urls')),
 ]
