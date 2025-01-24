@@ -24,7 +24,19 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-u7dk%*kho+8xaqoz+a)th+=#@)-9efv0-$f=x7ee)fol03im2$"
+secret_file = os.path.join(BASE_DIR, "secret_key.json")
+with open(secret_file) as f:
+    secrets = json.loads(f.read())
+
+def get_secret(setting):
+    return secrets[setting]
+
+SECRET_KEY = get_secret("SECRET_KEY")
+NAME = get_secret("NAME")
+USER = get_secret("USER")
+PASSWORD = get_secret("PASSWORD")
+HOST = get_secret("HOST")
+PORT = get_secret("PORT")
 
 # 아래 부분은 로컬에서 secret_key.json 읽는 부분입니다. Docker image를 올리고자 할 때에는 아래 부분을 주석처리 해주세요.
 secret_file_path = os.path.join(BASE_DIR, 'secret_key.json')
@@ -109,9 +121,13 @@ WSGI_APPLICATION = "reqruitment.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': NAME, # DB이름
+        'USER': USER, # DB 유저 아이디
+        'PASSWORD': PASSWORD, # 비밀번호
+        'HOST': HOST, # 또는 자신이 설정한 호스트
+        'PORT': PORT, # db가 연결된 포트(여기서는 기본 포트)
     }
 }
 
