@@ -186,4 +186,4 @@ word/migrations/*
 **/.DS_Store
 **/._.DS_Store
 
-./reqruitment/secret_key.json
+reqruitment/secret_key.json
