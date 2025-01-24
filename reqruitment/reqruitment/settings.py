@@ -32,6 +32,11 @@ def get_secret(setting):
     return secrets[setting]
 
 SECRET_KEY = get_secret("SECRET_KEY")
+NAME = get_secret("NAME")
+USER = get_secret("USER")
+PASSWORD = get_secret("PASSWORD")
+HOST = get_secret("HOST")
+PORT = get_secret("PORT")
 
 # 아래 부분은 로컬에서 secret_key.json 읽는 부분입니다. Docker image를 올리고자 할 때에는 아래 부분을 주석처리 해주세요.
 secret_file_path = os.path.join(BASE_DIR, 'secret_key.json')
@@ -118,11 +123,11 @@ WSGI_APPLICATION = "reqruitment.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'likelion2025', # DB이름
-        'USER': 'root', # DB 유저 아이디
-        'PASSWORD': 'km923009!!', # 비밀번호
-        'HOST': 'localhost', # 또는 자신이 설정한 호스트
-        'PORT': '3306', # db가 연결된 포트(여기서는 기본 포트)
+        'NAME': NAME, # DB이름
+        'USER': USER, # DB 유저 아이디
+        'PASSWORD': PASSWORD, # 비밀번호
+        'HOST': HOST, # 또는 자신이 설정한 호스트
+        'PORT': PORT, # db가 연결된 포트(여기서는 기본 포트)
     }
 }
 
