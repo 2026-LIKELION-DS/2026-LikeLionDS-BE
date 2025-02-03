@@ -66,15 +66,12 @@ class BoardSerializer(serializers.ModelSerializer):
             try:
                 file_name = f'board_images/{board.id}_{image.name}'
 
-                # 파일 MIME 타입 자동으로 추론
-                content_type = mimetypes.guess_type(image.name)[0] or "application/octet-stream"
-
                 # s3에 업로드
                 s3_client.upload_fileobj(
                     image,
                     settings.AWS_STORAGE_BUCKET_NAME,
                     file_name,
-                    ExtraArgs={'ContentType': content_type}
+                    ExtraArgs={'ContentType': 'image/png'}
                 )
 
                 # BoardImage에 저장
@@ -109,12 +106,12 @@ class BoardSerializer(serializers.ModelSerializer):
             try:
                 file_name = f'board_images/{instance.id}_{image.name}'
 
-                # S3에 새 이미지 업로드
-                s3_client.put_object(
-                    Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-                    Key=file_name,
-                    Body=image.read(),
-                    ContentType=image.content_type
+                # s3에 업로드
+                s3_client.upload_fileobj(
+                    image,
+                    settings.AWS_STORAGE_BUCKET_NAME,
+                    file_name,
+                    ExtraArgs={'ContentType': 'image/png'}
                 )
 
                 # BoardImage에 새 이미지 저장
