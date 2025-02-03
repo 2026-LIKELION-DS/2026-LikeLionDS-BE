@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Board, BoardImage, User
 from django.conf import settings
 import boto3
+import mimetypes
 
 class BoardImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -14,7 +15,6 @@ class BoardImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image_url']
 
 class BoardListSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y/%m/%d")
     content_preview = serializers.SerializerMethodField()
 
     def get_content_preview(self, obj):
@@ -23,7 +23,7 @@ class BoardListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id', 'title', 'created_at', 'content_preview']
-
+        read_only_fields = ['created_at']
 
 class BoardDetailSerializer(serializers.ModelSerializer):
     images = BoardImageSerializer(many=True, read_only=True)
@@ -67,10 +67,11 @@ class BoardSerializer(serializers.ModelSerializer):
                 file_name = f'board_images/{board.id}_{image.name}'
 
                 # s3에 업로드
-                s3_client.put_object(
-                    Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-                    Key=file_name,
-                    Body=image.read()
+                s3_client.upload_fileobj(
+                    image,
+                    settings.AWS_STORAGE_BUCKET_NAME,
+                    file_name,
+                    ExtraArgs={'ContentType': 'image/png'}
                 )
 
                 # BoardImage에 저장
@@ -105,12 +106,21 @@ class BoardSerializer(serializers.ModelSerializer):
             try:
                 file_name = f'board_images/{instance.id}_{image.name}'
 
-                # S3에 새 이미지 업로드
+                # s3에 업로드
+                # s3_client.upload_fileobj(
+                #     image,
+                #     settings.AWS_STORAGE_BUCKET_NAME,
+                #     file_name,
+                #     ExtraArgs={'ContentType': 'image/png'}
+                # )
+
                 s3_client.put_object(
                     Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                     Key=file_name,
-                    Body=image.read()
+                    Body=image,
+                    ContentType='image/png'  # 강제로 Content-Type을 image/png로 설정
                 )
+
 
                 # BoardImage에 새 이미지 저장
                 instance.images.create(image=file_name)
