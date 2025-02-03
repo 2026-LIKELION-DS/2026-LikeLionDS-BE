@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Board, BoardImage, User
 from django.conf import settings
 import boto3
+import mimetypes
 
 class BoardImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -65,12 +66,15 @@ class BoardSerializer(serializers.ModelSerializer):
             try:
                 file_name = f'board_images/{board.id}_{image.name}'
 
+                # 파일 MIME 타입 자동으로 추론
+                content_type = mimetypes.guess_type(image.name)[0] or "application/octet-stream"
+
                 # s3에 업로드
-                s3_client.put_object(
-                    Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-                    Key=file_name,
-                    Body=image.read(),
-                    ContentType=image.content_type
+                s3_client.upload_fileobj(
+                    image,
+                    settings.AWS_STORAGE_BUCKET_NAME,
+                    file_name,
+                    ExtraArgs={'ContentType': content_type}
                 )
 
                 # BoardImage에 저장
