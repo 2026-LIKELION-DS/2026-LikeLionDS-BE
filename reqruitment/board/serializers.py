@@ -69,7 +69,8 @@ class BoardSerializer(serializers.ModelSerializer):
                 s3_client.put_object(
                     Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                     Key=file_name,
-                    Body=image.read()
+                    Body=image.read(),
+                    ContentType=image.content_type
                 )
 
                 # BoardImage에 저장
@@ -108,7 +109,8 @@ class BoardSerializer(serializers.ModelSerializer):
                 s3_client.put_object(
                     Bucket=settings.AWS_STORAGE_BUCKET_NAME,
                     Key=file_name,
-                    Body=image.read()
+                    Body=image.read(),
+                    ContentType=image.content_type
                 )
 
                 # BoardImage에 새 이미지 저장
