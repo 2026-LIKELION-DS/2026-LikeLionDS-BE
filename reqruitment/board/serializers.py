@@ -107,12 +107,20 @@ class BoardSerializer(serializers.ModelSerializer):
                 file_name = f'board_images/{instance.id}_{image.name}'
 
                 # s3에 업로드
-                s3_client.upload_fileobj(
-                    image,
-                    settings.AWS_STORAGE_BUCKET_NAME,
-                    file_name,
-                    ExtraArgs={'ContentType': 'image/png'}
+                # s3_client.upload_fileobj(
+                #     image,
+                #     settings.AWS_STORAGE_BUCKET_NAME,
+                #     file_name,
+                #     ExtraArgs={'ContentType': 'image/png'}
+                # )
+
+                s3_client.put_object(
+                    Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                    Key=file_name,
+                    Body=image,
+                    ContentType='image/png'  # 강제로 Content-Type을 image/png로 설정
                 )
+
 
                 # BoardImage에 새 이미지 저장
                 instance.images.create(image=file_name)
