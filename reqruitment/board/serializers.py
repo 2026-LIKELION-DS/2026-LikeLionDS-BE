@@ -14,7 +14,6 @@ class BoardImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image_url']
 
 class BoardListSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y/%m/%d")
     content_preview = serializers.SerializerMethodField()
 
     def get_content_preview(self, obj):
@@ -23,7 +22,7 @@ class BoardListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id', 'title', 'created_at', 'content_preview']
-
+        read_only_fields = ['created_at']
 
 class BoardDetailSerializer(serializers.ModelSerializer):
     images = BoardImageSerializer(many=True, read_only=True)
