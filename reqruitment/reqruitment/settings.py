@@ -152,6 +152,10 @@ DATABASES = {
         'PASSWORD': PASSWORD, # 비밀번호
         'HOST': HOST, # 또는 자신이 설정한 호스트
         'PORT': PORT, # db가 연결된 포트(여기서는 기본 포트)
+               'OPTIONS': {
+            'charset': 'utf8mb4',
+            'use_unicode': True,
+        },
     }
 }
 
