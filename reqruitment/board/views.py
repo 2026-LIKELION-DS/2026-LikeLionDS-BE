@@ -12,9 +12,13 @@ class BoardView(viewsets.ModelViewSet):
             return BoardDetailSerializer
         else:
             return BoardSerializer
+        
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     def perform_create(self, serializer):
-        print("Request Data:", self.request.data) 
         serializer.save()
 
     def perform_update(self, serializer):
