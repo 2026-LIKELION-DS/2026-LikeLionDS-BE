@@ -41,10 +41,15 @@ class BoardSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    images_to_keep = serializers.ListField(
+        child=serializers.CharField(),
+        write_only=True,
+        required=False
+    )
 
     def create(self, validated_data):
         request = self.context.get('request')
-        uploaded_images = request.FILES.getlist('upload_images') if request else []
+        uploaded_images = request.FILES.getlist('uploaded_images') if request else []
 
         # admin_user 없으면 생성이 안 돼서 테스트할 때는 아래 코드 사용
         admin_user = User.objects.first()
@@ -66,47 +71,7 @@ class BoardSerializer(serializers.ModelSerializer):
             try:
                 file_name = f'board_images/{board.id}_{image.name}'
 
-                # s3에 업로드
-                s3_client.upload_fileobj(
-                    image,
-                    settings.AWS_STORAGE_BUCKET_NAME,
-                    file_name,
-                    ExtraArgs={'ContentType': 'image/png'}
-                )
-
-                # BoardImage에 저장
-                BoardImage.objects.create(
-                    board=board,
-                    image=file_name
-                )
-
-            except Exception as e:
-                print(f"이미지 업로드 실패: {e}")
-
-        return board
-
-    def update(self, instance, validated_data):
-        images_to_upload = self.context.get('request').FILES.getlist('upload_images', [])
-
-        # 이미지 외 수정 정보 저장
-        instance.title = validated_data.get('title', instance.title)
-        instance.content = validated_data.get('content', instance.content)
-        instance.save()
-
-        # s3 client 생성
-        s3_client = boto3.client(
-            's3', 
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-        )
-
-        instance.images.all().delete()
-
-        for image in images_to_upload:
-            try:
-                file_name = f'board_images/{instance.id}_{image.name}'
-
-                # s3에 업로드
+                # # s3에 업로드
                 # s3_client.upload_fileobj(
                 #     image,
                 #     settings.AWS_STORAGE_BUCKET_NAME,
@@ -121,15 +86,67 @@ class BoardSerializer(serializers.ModelSerializer):
                     ContentType='image/png'  # 강제로 Content-Type을 image/png로 설정
                 )
 
+                # BoardImage에 저장
+                BoardImage.objects.create(
+                    board=board,
+                    image=file_name
+                )
+
+            except Exception as e:
+                print(f"이미지 업로드 실패: {e}")
+
+        return board
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        uploaded_images = request.FILES.getlist('uploaded_images', [])
+
+        images_to_keep = request.POST.getlist('images_to_keep', [])
+
+        # 이미지 외 수정 정보 저장
+        instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+        instance.save()
+
+        # s3 client 생성
+        s3_client = boto3.client(
+            's3', 
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # 이미지 일부 삭제
+        for image in instance.images.all():
+            if image.image.url not in images_to_keep:
+                try:
+                    s3_client.delete_object(
+                        Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                        Key=image.image.name
+                    )
+                    image.delete()
+                except Exception as e:
+                    print(f"S3 이미지 삭제 실패: {e}")
+
+        for image in uploaded_images:
+            try:
+                file_name = f'board_images/{instance.id}_{image.name}'
+
+                # s3에 업로드
+                s3_client.upload_fileobj(
+                    image,
+                    settings.AWS_STORAGE_BUCKET_NAME,
+                    file_name,
+                    ExtraArgs={'ContentType': 'image/png'}
+                )
 
                 # BoardImage에 새 이미지 저장
                 instance.images.create(image=file_name)
             except Exception as e:
                 print(f"이미지 업로드 실패: {e}")
-
+        
         return instance
     
     class Meta:
         model = Board
-        fields = ['id', 'title', 'content', 'images', 'uploaded_images', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'content', 'images', 'uploaded_images', 'images_to_keep', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
