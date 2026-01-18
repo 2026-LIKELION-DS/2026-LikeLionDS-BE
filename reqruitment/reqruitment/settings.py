@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "board",
     "check",
     "qna",
+    "application",
     "corsheaders",
     "storages",
 ]
