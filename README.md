@@ -6,7 +6,7 @@
 <table>
   <thead>
     <tr>
-      <th>김나</th>
+      <th>김나은</th>
       <th>이수진</th>
       <th>유수빈</th>
       <th>이유민</th>
