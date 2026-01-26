@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Application, CommonAnswer, PartSpecificAnswer
 
+
 class CommonAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommonAnswer
@@ -38,3 +39,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
             PartSpecificAnswer.objects.create(application=application, **answer_data)
 
         return application
+    
+
+
+class SubmissionCheckSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    phone_number = serializers.CharField(max_length=20)
+    email = serializers.EmailField()
