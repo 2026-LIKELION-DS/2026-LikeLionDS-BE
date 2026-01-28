@@ -27,9 +27,6 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 # 프로젝트의 소스 코드 복사
 COPY ./reqruitment /reqruitment
 
-# 환경 변수를 설정 (개발 모드의 예)
-COPY .env /reqruitment/.env
-
 ENV DJANGO_SETTINGS_MODULE=reqruitment.settings
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
