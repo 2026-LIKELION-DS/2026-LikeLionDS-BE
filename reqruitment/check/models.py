@@ -1,14 +1,27 @@
 from django.db import models
+from application.models import Application
 
 class Applicant(models.Model):
-    name = models.CharField(max_length=100)  # 이름
-    phone_number = models.CharField(max_length=20)  # 전화번호
-    email = models.EmailField(max_length=255, unique=True)  # 이메일
-    is_passed = models.BooleanField()  # 합격 여부 (True/False)
+    application = models.OneToOneField(
+        Application, 
+        on_delete=models.CASCADE, 
+        related_name='pass_status',
+        verbose_name='지원서'
+        )
+    
+    is_passed = models.BooleanField(default=False, verbose_name='합격 여부')
+    
+    @property
+    def name(self):
+        return self.application.name
+    
+    @property
+    def email(self):
+        return self.application.email
 
     def __str__(self):
-        return f"{self.name} - {'합격' if self.is_passed else '불합격'}"
-
+        return f"{self.application.name}({self.application.get_part_display()}/{self.application.student_id}) - {'합격' if self.is_passed else '불합격'}"
+    
 class InterviewTimeSlot(models.Model):
     date = models.DateField()  # 면접 날짜
     start_time = models.TimeField()  # 시작 시간

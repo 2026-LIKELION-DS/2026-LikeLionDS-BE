@@ -17,7 +17,7 @@ class Application(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # 제출일시
 
     def __str__(self):
-        return f"{self.name} - {self.get_part_display()}"
+        return f"{self.name} - {self.get_part_display()} ({self.student_id})"
 
 class CommonAnswer(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='common_answers')
