@@ -3,7 +3,7 @@ name: 🚀 Deploy to EC2
 on:
   push:
     branches:
-      - main  # main 브랜치에 푸시할 때 실행
+      - main
 
 jobs:
   deploy:
@@ -61,14 +61,29 @@ jobs:
             --restart always \
             ${{ secrets.DOCKERHUB_USERNAME }}/likelion-backend:latest
           
-          echo "📂 Copying static files..."
-          # Static 파일 재복사
-          sleep 5
+          echo "⏳ Waiting for container to start..."
+          # 컨테이너 시작 대기
+          sleep 10
+          
+          echo "📂 Collecting static files in container..."
+          # 컨테이너 내부에서 collectstatic 실행 ⬅️ 추가!
+          docker exec likelion-backend python manage.py collectstatic --noinput
+          
+          echo "📂 Copying static files to host..."
+          # Static 파일 호스트로 복사
           docker cp likelion-backend:/reqruitment/staticfiles /home/ubuntu/staticfiles_temp
           sudo rm -rf /home/ubuntu/staticfiles
           sudo mv /home/ubuntu/staticfiles_temp /home/ubuntu/staticfiles
+          
+          echo "🔐 Setting permissions..."
+          # 권한 설정
+          sudo chmod 755 /home/ubuntu
           sudo chown -R ubuntu:ubuntu /home/ubuntu/staticfiles
           sudo chmod -R 755 /home/ubuntu/staticfiles
+          
+          echo "🔄 Reloading Nginx..."
+          # Nginx 재시작
+          sudo systemctl reload nginx
           
           echo "📋 Container logs:"
           # 로그 확인
