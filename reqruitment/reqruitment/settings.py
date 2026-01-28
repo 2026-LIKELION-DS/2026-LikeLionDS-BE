@@ -43,6 +43,7 @@ HOST = get_secret("HOST")
 PORT = get_secret("PORT")
 
 # 아래 부분은 로컬에서 secret_key.json 읽는 부분입니다. Docker image를 올리고자 할 때에는 아래 부분을 주석처리 해주세요.
+'''
 secret_file_path = os.path.join(BASE_DIR, 'secret_key.json')
 
 try:
@@ -53,15 +54,15 @@ except FileNotFoundError:
     raise Exception("secret_key.json 파일을 찾을 수 없습니다. 프로젝트 루트에 secret_key.json 파일을 생성하세요.")
 except KeyError:
     raise Exception("secret_key.json 파일에 'SECRET_KEY' 키가 존재하지 않습니다.")
+'''
 
 # 아래 부분은 Docker에서 secret_key.json 읽는 부분입니다. 로컬에서 실행할 때는, 아래 부분을 주석처리 해주세요.
-'''
 secret_file_path = os.getenv('SECRET_KEY_FILE', '/reqruitment/secret_key.json')
 
 with open(secret_file_path) as secret_file:
     secrets = json.load(secret_file)
     SECRET_KEY = secrets['SECRET_KEY']
-'''
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
