@@ -64,7 +64,7 @@ with open(secret_file_path) as secret_file:
 '''
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
