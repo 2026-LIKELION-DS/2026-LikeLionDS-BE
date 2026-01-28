@@ -1,0 +1,77 @@
+name: 🚀 Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 푸시할 때 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. 코드 체크아웃
+    - name: 📦 Checkout code
+      uses: actions/checkout@v3
+    
+    # 2. Docker Hub 로그인
+    - name: 🔐 Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    # 3. Docker 이미지 빌드 & 푸시
+    - name: 🏗️ Build and Push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/likelion-backend:latest .
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/likelion-backend:latest
+    
+    # 4. EC2 배포
+    - name: 🚢 Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          echo "📝 Creating configuration files..."
+          # .env 파일 생성
+          echo "${{ secrets.ENV_FILE }}" > ~/deploy/.env
+          
+          # secret_key.json 생성
+          echo '${{ secrets.SECRET_KEY_JSON }}' > ~/deploy/secret_key.json
+          
+          echo "🐳 Pulling Docker image..."
+          # Docker 이미지 풀
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/likelion-backend:latest
+          
+          echo "🛑 Stopping existing container..."
+          # 기존 컨테이너 중지 및 삭제
+          docker stop likelion-backend || true
+          docker rm likelion-backend || true
+          
+          echo "▶️ Starting new container..."
+          # 새 컨테이너 실행
+          docker run -d \
+            --name likelion-backend \
+            -p 8000:8000 \
+            -v ~/deploy/.env:/reqruitment/.env \
+            -v ~/deploy/secret_key.json:/reqruitment/secret_key.json \
+            --restart always \
+            ${{ secrets.DOCKERHUB_USERNAME }}/likelion-backend:latest
+          
+          echo "📂 Copying static files..."
+          # Static 파일 재복사
+          sleep 5
+          docker cp likelion-backend:/reqruitment/staticfiles /home/ubuntu/staticfiles_temp
+          sudo rm -rf /home/ubuntu/staticfiles
+          sudo mv /home/ubuntu/staticfiles_temp /home/ubuntu/staticfiles
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/staticfiles
+          sudo chmod -R 755 /home/ubuntu/staticfiles
+          
+          echo "📋 Container logs:"
+          # 로그 확인
+          docker logs --tail 50 likelion-backend
+          
+          echo "✅ Deployment completed successfully!"
