@@ -12,6 +12,7 @@ class Application(models.Model):
     email = models.EmailField(unique=True)  # 이메일
     student_id = models.CharField(max_length=20)  # 학번
     department = models.CharField(max_length=100)  # 학과
+    academic_status = models.CharField(max_length=20) #학년/재학여부
     part = models.CharField(max_length=2, choices=PART_CHOICES)  # 지원 파트
     created_at = models.DateTimeField(auto_now_add=True)  # 제출일시
 

@@ -20,7 +20,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         model = Application
         fields = [
             'id', 'name', 'phone_number', 'email', 'student_id', 
-            'department', 'part', 'common_answers', 'part_answers'
+            'department','academic_status', 'part', 'common_answers', 'part_answers'
         ]
 
     def create(self, validated_data):
