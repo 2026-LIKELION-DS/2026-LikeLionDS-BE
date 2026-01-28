@@ -32,8 +32,5 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV SECRET_KEY_FILE=/reqruitment/secret_key.json
 
-# Django 프로젝트가 필요로 하는 static 파일 모으기
-RUN python manage.py collectstatic --noinput
-
 # 컨테이너 실행 시 명령어
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
