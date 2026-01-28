@@ -153,7 +153,7 @@ DATABASES = {
         'PASSWORD': PASSWORD, # 비밀번호
         'HOST': HOST, # 또는 자신이 설정한 호스트
         'PORT': PORT, # db가 연결된 포트(여기서는 기본 포트)
-               'OPTIONS': {
+        'OPTIONS': {
             'charset': 'utf8mb4',
             'use_unicode': True,
         },
@@ -210,7 +210,11 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
 
 # Static and media file storage
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Media URL
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
