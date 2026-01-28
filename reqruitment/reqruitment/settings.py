@@ -100,7 +100,21 @@ MIDDLEWARE = [
 ]
 
 # 모든 도메인에서 API 접근 허용 (주의: 개발 단계에서만 사용, 프로덕션에서는 제한적으로 사용하는 것이 좋습니다)
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS 설정
+CORS_ALLOWED_ORIGINS = [
+    "https://likelion-duksung.site",           # 메인 도메인
+    "https://api.likelion-duksung.site",       # API 서브도메인
+    "https://www.likelion-duksung.site",       # www 서브도메인
+    "http://localhost:3000",                    # React 로컬 개발
+    "http://localhost:5173",                    # Vite 로컬 개발
+]
+
+CORS_ALLOW_CREDENTIALS = True  # 쿠키/세션 전송 허용
+
+# Preflight 캐싱 (24시간)
+CORS_PREFLIGHT_MAX_AGE = 86400
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -121,6 +135,17 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+# CSRF 신뢰 도메인
+CSRF_TRUSTED_ORIGINS = [
+    "https://likelion-duksung.site",
+    "https://www.likelion-duksung.site",
+    "https://api.likelion-duksung.site",
+]
+
+# 보안 헤더
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
 
 ROOT_URLCONF = "reqruitment.urls"
 
