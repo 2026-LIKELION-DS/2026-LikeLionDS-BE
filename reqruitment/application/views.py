@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from .models import Application
-from .serializers import ApplicationSerializer , SubmissionCheckSerializer
+from .serializers import ApplicationSerializer , SubmissionCheckSerializer, DuplicateCheckSerializer
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -56,4 +56,55 @@ class SubmissionCheckView(generics.GenericAPIView):
             "status": "success",
             "message": "제출이 완료되었습니다.",
             "data": {"submitted": True, "submitted_at": app.created_at}
+        }, status=status.HTTP_200_OK)
+        
+class DuplicateCheckView(generics.GenericAPIView):
+    serializer_class = DuplicateCheckSerializer
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({
+                "status": "fail",
+                "message": "입력값을 확인해주세요.",
+                "errors": serializer.errors,
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # 입력값 정규화
+        name = serializer.validated_data["name"].strip()
+        phone_number = serializer.validated_data["phone_number"].strip().replace("-", "").replace(" ", "")
+
+        # 이름 + 전화번호로 기존 지원자 조회
+        # DB에 저장된 전화번호도 하이픈 제거 후 비교
+        applications = Application.objects.filter(name=name)
+        
+        for app in applications:
+            db_phone = app.phone_number.replace("-", "").replace(" ", "")
+            if db_phone == phone_number:
+                # 중복 발견!
+                return Response({
+                    "status": "success",
+                    "message": "이미 지원서를 제출한 지원자입니다.",
+                    "data": {
+                        "is_duplicate": True,
+                        "applicant": {
+                            "name": app.name,
+                            "email": app.email,
+                            "part": app.get_part_display(),
+                            "submitted_at": app.created_at
+                        }
+                    }
+                }, status=status.HTTP_200_OK)
+        
+        # 중복 없음
+        return Response({
+            "status": "success",
+            "message": "신규 지원자입니다.",
+            "data": {
+                "is_duplicate": False
+            }
         }, status=status.HTTP_200_OK)

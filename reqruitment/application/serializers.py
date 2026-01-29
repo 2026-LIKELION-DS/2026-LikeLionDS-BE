@@ -46,3 +46,7 @@ class SubmissionCheckSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     phone_number = serializers.CharField(max_length=20)
     email = serializers.EmailField()
+
+class DuplicateCheckSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    phone_number = serializers.CharField(max_length=20)
