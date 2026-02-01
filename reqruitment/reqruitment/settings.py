@@ -109,6 +109,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.likelion-duksung.site",       # www 서브도메인
     "http://localhost:3000",                    # React 로컬 개발
     "http://localhost:5173",                    # Vite 로컬 개발
+    "https://2026-like-lion-ds-fe.vercel.app", # Vercel 배포
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # 쿠키/세션 전송 허용
