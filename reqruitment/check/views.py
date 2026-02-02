@@ -146,3 +146,59 @@ class SelectInterviewView(APIView):
             "status": "success",
             "message": "면접 시간이 성공적으로 저장되었습니다."
         }, status=status.HTTP_200_OK)
+
+class InterviewSubmissionCheckView(APIView):
+    def post(self, request):
+        email = request.data.get('email', "").strip()
+        
+        if not email:
+            return Response({
+                "status": "fail",
+                "message": "이메일을 입력해주세요.",
+                "data": None
+            }, status=200)
+        
+        try:
+            # Application 조회
+            application = Application.objects.filter(email=email).first()
+            
+            if not application:
+                return Response({
+                    "status": "fail",
+                    "message": "지원자를 찾을 수 없습니다.",
+                    "data": None
+                }, status=200)
+            
+            # Applicant 확인
+            try:
+                applicant = application.pass_status
+            except Applicant.DoesNotExist:
+                return Response({
+                    "status": "fail",
+                    "message": "아직 합격 발표 전입니다.",
+                    "data": None
+                }, status=200)
+            
+            # 합격자가 아니면
+            if not applicant.is_passed:
+                return Response({
+                    "status": "success",
+                    "message": "조회 성공",
+                    "data": {"submitted": False}
+                }, status=200)
+            
+            # 제출 여부 확인
+            has_submitted = ApplicantTimeSlot.objects.filter(applicant=applicant).exists()
+            
+            return Response({
+                "status": "success",
+                "message": "조회 성공",
+                "data": {"submitted": has_submitted}
+            }, status=200)
+            
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "서버 오류가 발생했습니다.",
+                "error": str(e)
+            }, status=500)

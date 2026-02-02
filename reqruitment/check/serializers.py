@@ -10,3 +10,6 @@ class InterviewTimeSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = InterviewTimeSlot
         fields = ['id', 'date', 'start_time', 'end_time']
+        
+class InterviewSubmissionCheckSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
