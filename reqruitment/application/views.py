@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from .models import Application
-from .serializers import ApplicationSerializer , SubmissionCheckSerializer, DuplicateCheckSerializer
+from .serializers import ApplicationSerializer , SubmissionCheckSerializer, DuplicateCheckSerializer, EmailDuplicateCheckSerializer
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -106,5 +106,34 @@ class DuplicateCheckView(generics.GenericAPIView):
             "message": "신규 지원자입니다.",
             "data": {
                 "is_duplicate": False
+            }
+        }, status=status.HTTP_200_OK)
+
+class EmailDuplicateCheckView(generics.GenericAPIView):
+    serializer_class = EmailDuplicateCheckSerializer
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({
+                "status": "fail",
+                "message": "입력값을 확인해주세요.",
+                "errors": serializer.errors,
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        email = serializer.validated_data["email"].strip()
+        
+        # 이메일 중복 확인
+        is_duplicate = Application.objects.filter(email=email).exists()
+        
+        return Response({
+            "status": "success",
+            "message": "이메일 중복 확인 완료",
+            "data": {
+                "is_duplicate": is_duplicate
             }
         }, status=status.HTTP_200_OK)
